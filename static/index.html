@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpotFit - Bright Feature Center & Circle Fitter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="logo-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="9"></circle>
+                        <circle cx="12" cy="12" r="3" fill="currentColor"></circle>
+                        <line x1="12" y1="1" x2="12" y2="4"></line>
+                        <line x1="12" y1="20" x2="12" y2="23"></line>
+                        <line x1="1" y1="12" x2="4" y2="12"></line>
+                        <line x1="20" y1="12" x2="23" y2="12"></line>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h1>SpotFit <span class="badge">v1.3</span></h1>
+                    <p>Sub-Pixel Bright Feature Center Detector & Circle Fitter</p>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <button id="btn-demo-batch" class="btn btn-primary glow-pulse">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    Load 3-Image Demo Batch
+                </button>
+                <button id="btn-demo" class="btn btn-secondary">
+                    Single Demo
+                </button>
+                <div id="connection-status" class="status-indicator online">
+                    <span class="dot"></span> Backend Active
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Sidebar Controls -->
+            <aside class="sidebar">
+                <!-- Source Address & Image Loading Card -->
+                <section class="card">
+                    <h2 class="card-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        Image Source & Folder Selection
+                    </h2>
+
+                    <!-- Source Address Display -->
+                    <div class="source-address-box" id="source-address-box">
+                        <span class="label">Loaded Address / Folder:</span>
+                        <div class="address-value" id="source-path-display">No folder/image loaded</div>
+                    </div>
+
+                    <div class="tab-group">
+                        <button class="tab-btn active" data-tab="tab-folder">Folder Path</button>
+                        <button class="tab-btn" data-tab="tab-upload">Upload Images</button>
+                        <button class="tab-btn" data-tab="tab-path">Single File</button>
+                    </div>
+
+                    <!-- Folder Tab -->
+                    <div class="tab-content active" id="tab-folder">
+                        <div class="input-group">
+                            <label for="input-dir-path">Folder Path (Containing Images)</label>
+                            <div class="input-with-button">
+                                <input type="text" id="input-dir-path" placeholder="C:\path\to\images_folder" class="form-input">
+                                <button id="btn-analyze-folder" class="btn btn-primary">Fit All Images</button>
+                            </div>
+                        </div>
+                        <div id="dir-file-list" class="dir-file-list mt-2"></div>
+                    </div>
+
+                    <!-- Upload Tab -->
+                    <div class="tab-content" id="tab-upload">
+                        <div class="drop-zone" id="drop-zone">
+                            <input type="file" id="file-input" accept="image/*" multiple class="file-input-hidden">
+                            <svg class="drop-icon" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                <polyline points="21 15 16 10 5 21"></polyline>
+                            </svg>
+                            <p class="drop-text">Drag & drop 1 or 3 images here or <span>browse</span></p>
+                            <p class="drop-sub">PNG, JPG, BMP, TIFF (Multiple files supported)</p>
+                        </div>
+                    </div>
+
+                    <!-- Path Tab -->
+                    <div class="tab-content" id="tab-path">
+                        <div class="input-group">
+                            <label for="input-file-path">Local Image Absolute Path</label>
+                            <div class="input-with-button">
+                                <input type="text" id="input-file-path" placeholder="C:\path\to\image.png" class="form-input">
+                                <button id="btn-load-path" class="btn btn-primary">Load</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Multi-Image Batch Bar / File Selector -->
+                <section class="card" id="batch-selector-card">
+                    <div class="card-header-with-switch">
+                        <h2 class="card-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                            </svg>
+                            Folder Image List (<span id="batch-count-text">0</span>)
+                        </h2>
+                    </div>
+                    <div id="batch-item-list" class="batch-item-list">
+                        <div class="empty-batch-text">No images loaded yet. Load a folder or click "Load 3-Image Demo Batch".</div>
+                    </div>
+                </section>
+
+                <!-- Mode Switch & Fitting Parameters (Per Active Image) -->
+                <section class="card">
+                    <div class="card-header-with-switch">
+                        <h2 class="card-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                            </svg>
+                            Mode (Active Image)
+                        </h2>
+                        
+                        <!-- Toggle Switch: AUTO vs MANUAL -->
+                        <div class="mode-switch-wrapper">
+                            <span class="mode-label" id="label-auto">AUTO</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-fitting-mode">
+                                <span class="slider"></span>
+                            </label>
+                            <span class="mode-label" id="label-manual">MANUAL</span>
+                        </div>
+                    </div>
+
+                    <div id="auto-mode-info" class="mode-info-banner">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Auto mode evaluates peak intensity centroid and edge radial gradients.</span>
+                    </div>
+
+                    <!-- Manual Controls -->
+                    <div id="manual-controls-panel" class="manual-controls hidden">
+                        <div class="manual-tip">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                            Drag center dot or radius ring on canvas, or type values below:
+                        </div>
+                        <div class="grid-2">
+                            <div class="input-group">
+                                <label for="num-cx">Center X (px)</label>
+                                <input type="number" id="num-cx" step="0.1" class="form-input">
+                            </div>
+                            <div class="input-group">
+                                <label for="num-cy">Center Y (px)</label>
+                                <input type="number" id="num-cy" step="0.1" class="form-input">
+                            </div>
+                        </div>
+                        <div class="input-group mt-2">
+                            <label for="num-radius">Radius R (px)</label>
+                            <input type="number" id="num-radius" step="0.5" min="1" class="form-input">
+                        </div>
+                        <button id="btn-refit-auto" class="btn btn-secondary btn-full mt-3">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                            </svg>
+                            Reset Active Image to Auto Fit
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Batch Results Summary Table -->
+                <section class="card highlight-border">
+                    <div class="card-header-with-switch">
+                        <h2 class="card-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                            </svg>
+                            Summary Table
+                        </h2>
+
+                        <button id="btn-export-csv" class="btn btn-primary glow-cyan">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Export CSV
+                        </button>
+                    </div>
+
+                    <!-- Summary Table -->
+                    <div class="summary-table-wrapper">
+                        <table class="summary-table" id="summary-table">
+                            <thead>
+                                <tr>
+                                    <th>Image File</th>
+                                    <th>Center X</th>
+                                    <th>Center Y</th>
+                                    <th>Radius</th>
+                                    <th>Mode</th>
+                                </tr>
+                            </thead>
+                            <tbody id="summary-table-body">
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">No images analyzed yet</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Radial Profile Plot -->
+                <section class="card">
+                    <h2 class="card-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="20" x2="18" y2="10"></line>
+                            <line x1="12" y1="20" x2="12" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="14"></line>
+                        </svg>
+                        Radial Intensity Profile (Active Image)
+                    </h2>
+                    <div class="profile-chart-wrapper">
+                        <canvas id="canvas-profile" width="300" height="120"></canvas>
+                    </div>
+                </section>
+            </aside>
+
+            <!-- Main Viewport & Report Area -->
+            <main class="viewport-container">
+                <div class="viewport-toolbar">
+                    <div class="toolbar-left">
+                        <span class="viewport-title" id="active-image-title">Image Overlay Viewer</span>
+                        <span id="image-dim-badge" class="badge-dim">0 x 0</span>
+                        <span id="active-mode-badge" class="badge badge-cyan">AUTO MODE</span>
+                    </div>
+
+                    <div class="toolbar-right">
+                        <button id="btn-zoom-in" class="tool-btn" title="Zoom In">+</button>
+                        <button id="btn-zoom-out" class="tool-btn" title="Zoom Out">-</button>
+                        <button id="btn-zoom-reset" class="tool-btn" title="Reset View">100%</button>
+                        <button id="btn-toggle-grid" class="tool-btn active" title="Toggle Grid Overlay">Grid</button>
+                    </div>
+                </div>
+
+                <div class="canvas-wrapper" id="canvas-wrapper">
+                    <canvas id="main-canvas"></canvas>
+                    
+                    <!-- Empty State Overlay -->
+                    <div class="empty-state" id="empty-state">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <circle cx="12" cy="12" r="4"></circle>
+                            <line x1="12" y1="2" x2="12" y2="6"></line>
+                            <line x1="12" y1="18" x2="12" y2="22"></line>
+                        </svg>
+                        <h3>No Image Loaded</h3>
+                        <p>Click <strong>"Load 3-Image Demo Batch"</strong> above, or scan a folder containing your images.</p>
+                    </div>
+                </div>
+
+                <div class="viewport-footer">
+                    <div id="mouse-coords" class="coords-display">Cursor: X: 0 | Y: 0</div>
+                    <div class="hint-text">
+                        <span class="tag">Scroll</span> to Zoom &bull; 
+                        <span class="tag">Drag Canvas</span> to Pan &bull; 
+                        <span class="tag">Drag Ring/Center</span> to Adjust Fit (Manual)
+                    </div>
+                </div>
+
+                <!-- BATCH ANALYSIS REPORT SECTION -->
+                <section class="report-section-container">
+                    <div class="report-header">
+                        <div class="report-title-box">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                            <div>
+                                <h2>Batch Fitting Analysis Report</h2>
+                                <p>Live preview of all fitted images with center coordinates and radius parameters (updates in real time)</p>
+                            </div>
+                        </div>
+
+                        <div class="report-actions">
+                            <button id="btn-export-csv-report" class="btn btn-primary">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                Download CSV Report
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Report Grid Container -->
+                    <div id="report-grid" class="report-grid">
+                        <div class="empty-report-placeholder">
+                            No batch report available yet. Load images to view live multi-image report cards.
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Notification Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
