@@ -59,3 +59,7 @@ Build a web application named "SpotFit" with a Python backend and an interactive
    ├── tests/
    │   └── test_analyzer.py
    └── pyproject.toml
+
+
+
+Run server with `uv run python app/main.py --port 8000`
